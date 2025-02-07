@@ -15,7 +15,7 @@
    
     2. Add MySQL bin to System PATH
 
-       1.Press Win + R, type `sysdm.cpl`, and press Enter.
+       1. Press Win + R, type `sysdm.cpl`, and press Enter.
        2. Go to the Advanced tab.
        3. Click on Environment Variables.
        4. Edit the Path Variable

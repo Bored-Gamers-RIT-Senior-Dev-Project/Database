@@ -1,8 +1,8 @@
-DROP DATABASE IF EXISTS BoardGame
+DROP DATABASE IF EXISTS BoardGame;
 
-CREATE DATABASE BoardGame
+CREATE DATABASE BoardGame;
 
-USE BoardGame
+USE BoardGame;
 
 
 CREATE TABLE Universities (

@@ -2,7 +2,7 @@
 1. Navagate to the Database repo `cd path/to/database/repo`
 2. Run update_database.sh `./update_database.sh`
 
-#Windows Users
+# Windows Users
 1. Download Python https://www.python.org/downloads/
 2. Make sure mysql bin is added to PATH. check by running `mysql --version` into a cmd window. If mysql is not found, follow the steps below.
    

@@ -8,22 +8,21 @@
    
     1. Find the MySQL bin Directory
   
-    Open File Explorer.
-    Navigate to the folder where MySQL is installed. By default, it’s usually in: `C:\Program Files\MySQL\MySQL Server X.X\` (Replace X.X with your MySQL version.)
-    Locate the bin folder inside: `C:\Program Files\MySQL\MySQL Server X.X\bin`
-    This folder contains mysql.exe, mysqldump.exe, and other MySQL command-line tools.
+       1. Open File Explorer.
+       2. Navigate to the folder where MySQL is installed. By default, it’s usually in: `C:\Program Files\MySQL\MySQL Server X.X\` (Replace X.X with your MySQL version.)
+       3. Locate the bin folder inside: `C:\Program Files\MySQL\MySQL Server X.X\bin`
+       4. This folder contains mysql.exe, mysqldump.exe, and other MySQL command-line tools.
    
     2. Add MySQL bin to System PATH
 
-    Press Win + R, type `sysdm.cpl`, and press Enter.
-    Go to the Advanced tab.
-    Click on Environment Variables.
-    Edit the Path Variable
-    In the System Variables section, scroll down and find Path.
-    Select it and click Edit.
-    Click New and paste the MySQL bin path:
-    C:\Program Files\MySQL\MySQL Server X.X\bin
-    Click OK to save.
+       1.Press Win + R, type `sysdm.cpl`, and press Enter.
+       2. Go to the Advanced tab.
+       3. Click on Environment Variables.
+       4. Edit the Path Variable
+       5. In the System Variables section, scroll down and find Path.
+       6. Select it and click Edit.
+       7. Click New and paste the MySQL bin path: C:\Program Files\MySQL\MySQL Server X.X\bin
+       8. Click OK to save.
 
 3. navigate to your Database repo `cd path/to/database/repo`
 4. run `python update_database.py`   

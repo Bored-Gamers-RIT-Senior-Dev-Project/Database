@@ -11,14 +11,14 @@ def main():
 
     # SQL file path
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    SQL_FILE = os.path.join(script_dir, "create_database.sql")
+    sql_file = os.path.join(script_dir, "create_database.sql")
 
     # Prompt for password
-    MYSQL_PASSWORD = getpass.getpass("Enter your database password: ")
+    mysql_password = getpass.getpass("Enter your database password: ")
 
     # Check for SQL file
-    if not os.path.isfile(SQL_FILE):
-        print(f"Error: SQL file {SQL_FILE} not found!")
+    if not os.path.isfile(sql_file):
+        print(f"Error: SQL file {sql_file} not found!")
         return
 
     # Run the SQL file
@@ -30,16 +30,19 @@ def main():
                 "mysql",
                 "-u",
                 MYSQL_USER,
-                f"-p{MYSQL_PASSWORD}",
+                f"-p{mysql_password}",
                 "-h",
                 MYSQL_HOST,
                 MYSQL_DB,
             ],
-            stdin=open(SQL_FILE, "r"),
+            stdin=open(sql_file, "r"),
             check=True,
             text=True,
         )
-        print("Database reset and schema applied successfully!")
+        if result == 0:
+            print("Database reset and schema applied successfully!")
+        else:
+            print("There was an error while applying the database update.")
     except subprocess.CalledProcessError:
         print("There was an error while applying the database update.")
 

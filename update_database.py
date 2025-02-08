@@ -26,7 +26,7 @@ def main():
     print("Resetting and recreating the database...")
 
     try:
-        result = subprocess.run(
+        subprocess.run(
             [
                 "mysql",
                 "-u",
@@ -40,10 +40,7 @@ def main():
             check=True,
             text=True,
         )
-        if result == 0:
-            print("Database reset and schema applied successfully!")
-        else:
-            print("There was an error while applying the database update.")
+        print("Database reset and schema applied successfully!")
     except subprocess.CalledProcessError:
         print("There was an error while applying the database update.")
 

@@ -1,7 +1,7 @@
 # Linux Users
 1. Navagate to the Database repo `cd path/to/database/repo`
-2. add executable permissions to the script `chmod 755 update_database.sh`
-3. Run update_database.sh `./update_database.sh`
+2. add executable permissions to the script `chmod 755 update_database.py`
+3. Run update_database.py `./update_database.py`
 
 # Windows Users
 1. Download Python https://www.python.org/downloads/

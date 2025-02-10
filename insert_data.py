@@ -66,55 +66,72 @@ def insert_roles():
     conn.commit()
     return role_ids
 
-def insert_users(n=150, university_ids=[], role_ids=[]):
+def insert_users(n=200, university_ids=[], role_ids=[]):
     users = []
+    generated_usernames = set()
+    generated_emails = set()
+    generated_uids = set()
+
     for _ in range(n):
-        first_name = fake.first_name()
-        last_name = fake.last_name()
-        username = fake.user_name()
-        email = fake.email()
-        firebase_uid = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
-        profile_img = fake.image_url()
-        bio = fake.sentence()
-        paid = random.choice([True, False])
-        university_id = random.choice(university_ids) if university_ids else None
-        role_id = random.choice(role_ids) if role_ids else 3  # Default to 'Student'
-        is_validated = random.choice([True, False])
+        while True:
+            username = fake.user_name()
+            email = fake.email()
+            firebase_uid = fake.uuid4()  # Ensure unique FirebaseUIDs
+
+            # Ensure uniqueness
+            if username not in generated_usernames and email not in generated_emails and firebase_uid not in generated_uids:
+                generated_usernames.add(username)
+                generated_emails.add(email)
+                generated_uids.add(firebase_uid)
+                break  # Exit loop once unique values are found
 
         cursor.execute("""
             INSERT INTO Users (FirstName, LastName, Username, Email, FirebaseUID, ProfileImageURL, Bio, Paid, RoleID, UniversityID, IsValidated)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (first_name, last_name, username, email, firebase_uid, profile_img, bio, paid, role_id, university_id, is_validated))
-        
+        """, (
+            fake.first_name(), fake.last_name(), username, email, firebase_uid,
+            fake.image_url(), fake.sentence(), random.choice([True, False]),
+            random.choice(role_ids), random.choice(university_ids), random.choice([True, False])
+        ))
         users.append(cursor.lastrowid)
-    
+
     conn.commit()
     return users
 
+
 def insert_teams(n=50, university_ids=[], user_ids=[]):
     teams = []
+    generated_team_names = set()
+
     for _ in range(n):
-        university_id = random.choice(university_ids) if university_ids else None
-        team_name = fake.word().capitalize() + " Team"
-        profile_img = fake.image_url()
-        description = fake.text()
-        team_leader = random.choice(user_ids) if user_ids else None
-        is_approved = random.choice([True, False])
+        while True:
+            team_name = fake.word().capitalize() + " Team"
+            if team_name not in generated_team_names:
+                generated_team_names.add(team_name)
+                break
 
         cursor.execute("""
             INSERT INTO Teams (UniversityID, TeamName, ProfileImageURL, Description, TeamLeaderID, IsApproved)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (university_id, team_name, profile_img, description, team_leader, is_approved))
-        
+        """, (random.choice(university_ids), team_name, fake.image_url(), fake.text(),
+              random.choice(user_ids), random.choice([True, False])))
         teams.append(cursor.lastrowid)
 
     conn.commit()
     return teams
 
+
 def insert_tournaments(n=20):
     tournaments = []
+    generated_tournament_names = set()
+
     for _ in range(n):
-        name = fake.word().capitalize() + " Tournament"
+        while True:
+            tournament_name = fake.word().capitalize() + " Tournament"
+            if tournament_name not in generated_tournament_names:
+                generated_tournament_names.add(tournament_name)
+                break  # Ensure uniqueness before inserting
+
         start_date = fake.date_this_year()
         end_date = start_date + timedelta(days=random.randint(1, 10))
         status = random.choice(["Active", "Completed", "Cancelled", "Upcoming"])
@@ -123,10 +140,10 @@ def insert_tournaments(n=20):
         cursor.execute("""
             INSERT INTO Tournaments (TournamentName, StartDate, EndDate, Status, Location)
             VALUES (%s, %s, %s, %s, %s)
-        """, (name, start_date, end_date, status, location))
+        """, (tournament_name, start_date, end_date, status, location))
         
         tournaments.append(cursor.lastrowid)
-    
+
     conn.commit()
     return tournaments
 

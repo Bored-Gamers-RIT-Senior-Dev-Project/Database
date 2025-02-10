@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import mysql.connector
 import random
 import string
@@ -83,7 +84,7 @@ def insert_users(n=200, university_ids=[], role_ids=[]):
                 generated_usernames.add(username)
                 generated_emails.add(email)
                 generated_uids.add(firebase_uid)
-                break  # Exit loop once unique values are found
+                break
 
         cursor.execute("""
             INSERT INTO Users (FirstName, LastName, Username, Email, FirebaseUID, ProfileImageURL, Bio, Paid, RoleID, UniversityID, IsValidated)
@@ -183,7 +184,23 @@ def insert_tickets(n=80, users=[]):
     
     conn.commit()
 
+# Assign users a team after both user and team has been created
+def assign_users_to_teams(users, teams):
+    
+    if not users or not teams:
+        print("Error: No users or teams available.")
+        return
 
+    for user_id in users:
+        team_id = random.choice(teams)  # Pick a random existing team
+        cursor.execute("""
+            UPDATE Users SET TeamID = %s WHERE UserID = %s
+        """, (team_id, user_id))
+
+    conn.commit()
+
+
+# Insert Data
 universities = insert_universities()
 roles = insert_roles()
 users = insert_users(university_ids=universities, role_ids=roles)
@@ -191,6 +208,8 @@ teams = insert_teams(university_ids=universities, user_ids=users)
 tournaments = insert_tournaments()
 insert_matches(tournaments=tournaments, teams=teams)
 insert_tickets(users=users)
+
+assign_users_to_teams(users=users, teams=teams)
 
 
 cursor.close()

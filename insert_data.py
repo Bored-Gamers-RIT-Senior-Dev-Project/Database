@@ -28,7 +28,7 @@ except mysql.connector.Error as err:
     exit()
 
 
-def insert_universities(n=5):
+def insert_universities(n=20):
     universities = []
     for _ in range(n):
         name = fake.company()
@@ -66,7 +66,7 @@ def insert_roles():
     conn.commit()
     return role_ids
 
-def insert_users(n=20, university_ids=[], role_ids=[]):
+def insert_users(n=150, university_ids=[], role_ids=[]):
     users = []
     for _ in range(n):
         first_name = fake.first_name()
@@ -91,7 +91,7 @@ def insert_users(n=20, university_ids=[], role_ids=[]):
     conn.commit()
     return users
 
-def insert_teams(n=5, university_ids=[], user_ids=[]):
+def insert_teams(n=50, university_ids=[], user_ids=[]):
     teams = []
     for _ in range(n):
         university_id = random.choice(university_ids) if university_ids else None
@@ -111,7 +111,7 @@ def insert_teams(n=5, university_ids=[], user_ids=[]):
     conn.commit()
     return teams
 
-def insert_tournaments(n=3):
+def insert_tournaments(n=20):
     tournaments = []
     for _ in range(n):
         name = fake.word().capitalize() + " Tournament"
@@ -131,7 +131,7 @@ def insert_tournaments(n=3):
     return tournaments
 
 
-def insert_matches(n=5, tournaments=[], teams=[]):
+def insert_matches(n=100, tournaments=[], teams=[]):
     for _ in range(n):
         tournament_id = random.choice(tournaments) if tournaments else None
         team1, team2 = random.sample(teams, 2) if len(teams) > 1 else (None, None)
@@ -147,7 +147,7 @@ def insert_matches(n=5, tournaments=[], teams=[]):
     conn.commit()
 
 
-def insert_tickets(n=5, users=[]):
+def insert_tickets(n=80, users=[]):
     ticket_types = ["Bug Report", "User Report", "General Inquiry", "Approval Request"]
     statuses = ["Open", "In Progress", "Closed"]
     

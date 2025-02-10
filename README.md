@@ -22,8 +22,12 @@
        4. Edit the Path Variable
        5. In the System Variables section, scroll down and find Path.
        6. Select it and click Edit.
-       7. Click New and paste the MySQL bin path: C:\Program Files\MySQL\MySQL Server X.X\bin
+       7. Click New and paste the MySQL bin path: `C:\Program Files\MySQL\MySQL Server X.X\bin`
        8. Click OK to save.
 
 3. navigate to your Database repo `cd path/to/database/repo`
-4. run `python update_database.py`   
+4. run `python update_database.py`
+
+# Inserting Test Data
+1. Install dependencies `pip install mysql-connector-python faker`
+2. Run the script `python insert_data.py`

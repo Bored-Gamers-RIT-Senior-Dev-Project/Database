@@ -30,7 +30,7 @@
 
 # Inserting Test Data
 1. Install dependencies `pip install mysql-connector-python faker`
-2. Run the script `python insert_data.py`
+2. Run the script `python insert_data.py` (Windows) `./insert_data.py` (Linux)
 3. This script will insert
       1. 200 Users
       2. 20 Univeristies

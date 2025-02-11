@@ -49,9 +49,9 @@ def insert_universities(n=20):
     conn.commit()
     return universities
 
-
+# Added Spectator role
 def insert_roles():
-    roles = ["Super Admin", "University Admin", "Student"]
+    roles = ["Spectator", "Super Admin", "University Admin", "Student"]
     role_ids = []
     
     for role in roles:

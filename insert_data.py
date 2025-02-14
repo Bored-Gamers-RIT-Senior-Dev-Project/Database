@@ -77,9 +77,8 @@ def insert_users(n=200, university_ids=[], role_ids=[]):
         while True:
             username = fake.user_name()
             email = fake.email()
-            firebase_uid = fake.uuid4()  # Ensure unique FirebaseUIDs
+            firebase_uid = fake.uuid4()  
 
-            # Ensure uniqueness
             if username not in generated_usernames and email not in generated_emails and firebase_uid not in generated_uids:
                 generated_usernames.add(username)
                 generated_emails.add(email)
@@ -131,7 +130,7 @@ def insert_tournaments(n=20):
             tournament_name = fake.word().capitalize() + " Tournament"
             if tournament_name not in generated_tournament_names:
                 generated_tournament_names.add(tournament_name)
-                break  # Ensure uniqueness before inserting
+                break  
 
         start_date = fake.date_this_year()
         end_date = start_date + timedelta(days=random.randint(1, 10))
@@ -184,6 +183,24 @@ def insert_tickets(n=80, users=[]):
     
     conn.commit()
 
+# Forgot this table (whoops)
+def insert_tournament_participants(users, tournaments):
+    if not users or not tournaments:
+        print("Error: No users or tournaments available.")
+        return
+
+    for tournament_id in tournaments:
+        participants = random.sample(users, min(len(users), random.randint(5, 20)))  # Randomly assign 5-20 users per tournament
+        for user_id in participants:
+            cursor.execute(
+                """
+                INSERT INTO TournamentParticipants (TournamentID, UserID)
+                VALUES (%s, %s)
+                """, (tournament_id, user_id)
+            )
+    
+    conn.commit()
+
 # Assign users a team after both user and team has been created
 def assign_users_to_teams(users, teams):
     
@@ -208,6 +225,7 @@ teams = insert_teams(university_ids=universities, user_ids=users)
 tournaments = insert_tournaments()
 insert_matches(tournaments=tournaments, teams=teams)
 insert_tickets(users=users)
+insert_tournament_participants(users=users, tournaments=tournaments)
 
 assign_users_to_teams(users=users, teams=teams)
 

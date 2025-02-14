@@ -10,3 +10,7 @@ dependencies = [
     "mysql-connector-python",
     "faker",
 ]
+
+[tool.setuptools]
+py-modules = ["insert_data", "update_database"]
+

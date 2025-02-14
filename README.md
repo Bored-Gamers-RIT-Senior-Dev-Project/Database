@@ -29,8 +29,10 @@
 4. run `python update_database.py`
 
 # Inserting Test Data
-1. Install dependencies `pip install mysql-connector-python faker`
-2. Run the script `python insert_data.py`
+1. Install dependencies: 
+      1. Create and activate the virtual envrironment, following the instructions [here](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#create-and-use-virtual-environments)
+      2. Install the dependencies: `pip install .`
+2. Run the script `python3 insert_data.py`
 3. This script will insert
       1. 200 Users
       2. 20 Univeristies
@@ -39,3 +41,4 @@
       5. 20 Tournaments
       6. 100 Matches
       7. 80 Tickets
+4. Deactivate the environment: `deactivate`

@@ -53,13 +53,13 @@ def insert_universities(n=20):
 # Added all user roles
 def insert_roles():
     roles = [
-        ("Spectator", "Track tournament progress and learn about participating universities."),
         ("Super Admin", "Grant permissions to any user as necessary (primarily Aardvark Games employees)"),
         ("Aardvark Games Employee", "Perform any other roles as necessary as well as view reports, logs, support tickets, etc."),
         ("Marketing Staff", "Post updates, manage university pages, review content tickets (approval of player/team profile pictures and biographies/descriptions)."),
         ("Tournament Facilitator", "Record match results, enforce rules."),
         ("Team Captain", "Register teams, manage members, post updates, and promote someone else on the team to be team leader."),
         ("Student/Player", "Join teams, leave teams, start a team, and view schedules."),
+        ("Spectator", "Track tournament progress and learn about participating universities."),
     ]
 
     role_ids = []
@@ -69,15 +69,20 @@ def insert_roles():
             """
             INSERT INTO Roles (RoleName, Description)
             VALUES (%s, %s)
-            ON DUPLICATE KEY UPDATE RoleID=RoleID
+            ON DUPLICATE KEY UPDATE RoleName=VALUES(RoleName)
         """,
             (role_name, description),
         )
 
-        cursor.execute("SELECT RoleID FROM Roles WHERE RoleName = %s", (role_name,))
-        role_ids.append(cursor.fetchone()[0])
-
     conn.commit()
+    
+    cursor.execute("SELECT RoleID FROM Roles")
+    role_ids = [row[0] for row in cursor.fetchall()]
+
+    print("Roles retrieved:", role_ids) 
+    
+    return role_ids
+
 
 
 def insert_users(n=200, university_ids=[], role_ids=[]):

@@ -96,6 +96,15 @@ CREATE TABLE TournamentParticipants (
 );
 
 
+CREATE TABLE TournamentFacilitators (
+    TournamentID INT NOT NULL,
+    UserID INT NOT NULL,
+    PRIMARY KEY (TournamentID, UserID),
+    FOREIGN KEY (TournamentID) REFERENCES Tournaments(TournamentID),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+
 CREATE TABLE Tickets (
     TicketID INT AUTO_INCREMENT PRIMARY KEY,
     UserID INT NOT NULL,

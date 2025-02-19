@@ -84,10 +84,15 @@ CREATE TABLE Matches (
 
 CREATE TABLE TournamentParticipants (
     TournamentID INT NOT NULL,
-    UserID INT NOT NULL,
-    PRIMARY KEY (TournamentID, UserID),
+    TeamID INT NOT NULL,
+    Round INT NOT NULL DEFAULT 0,
+    Byes INT NOT NULL DEFAULT 0,
+    Status ENUM('active', 'lost', 'winner', 'disqualified') NOT NULL DEFAULT 'active',
+    BracketSide ENUM('left', 'right') NOT NULL DEFAULT 'active',
+    NextMatchID INT NULL,
+    PRIMARY KEY (TournamentID, TeamID),
     FOREIGN KEY (TournamentID) REFERENCES Tournaments(TournamentID),
-    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+    FOREIGN KEY (TeamID) REFERENCES Teams(TeamID)
 );
 
 

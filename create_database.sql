@@ -88,12 +88,13 @@ CREATE TABLE TournamentParticipants (
     Round INT NOT NULL DEFAULT 0,
     Byes INT NOT NULL DEFAULT 0,
     Status ENUM('active', 'lost', 'winner', 'disqualified') NOT NULL DEFAULT 'active',
-    BracketSide ENUM('left', 'right') NOT NULL DEFAULT 'active',
+    BracketSide ENUM('left', 'right') NOT NULL DEFAULT 'left', 
     NextMatchID INT NULL,
     PRIMARY KEY (TournamentID, TeamID),
     FOREIGN KEY (TournamentID) REFERENCES Tournaments(TournamentID),
     FOREIGN KEY (TeamID) REFERENCES Teams(TeamID)
 );
+
 
 
 CREATE TABLE TournamentFacilitators (

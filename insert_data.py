@@ -5,6 +5,7 @@ import string
 from datetime import datetime, timedelta
 from faker import Faker
 import getpass
+import math
 
 fake = Faker()
 
@@ -233,34 +234,63 @@ def insert_tickets(n=80, users=[]):
     conn.commit()
 
 
-# TournamentParticipants now uses TeamID and additional columns.
+def next_power_of_two(x):
+    return 1 if x == 0 else 2**(math.ceil(math.log2(x)))
+
 def insert_tournament_participants(users, tournaments):
     if not users or not tournaments:
         print("Error: No users or tournaments available.")
         return
 
+    cursor.execute("SELECT UserID, TeamID FROM Users WHERE TeamID IS NOT NULL")
+    user_team_map = {row[0]: row[1] for row in cursor.fetchall()}
+    cursor.execute("SELECT TeamID FROM Teams")
+    all_teams = [row[0] for row in cursor.fetchall()]
+    if not all_teams:
+        print("No teams available.")
+        return
+
     for tournament_id in tournaments:
-        participants = random.sample(users, min(len(users), random.randint(5, 20)))
-        team_ids = set()
-        for user_id in participants:
-            # Look up the user's TeamID.
-            cursor.execute("SELECT TeamID FROM Users WHERE UserID = %s", (user_id,))
-            result = cursor.fetchone()
-            if result is not None and result[0] is not None:
-                team_ids.add(result[0])
+       
+        selected_users = random.sample(users, min(len(users), random.randint(5, 20)))
+        
+        team_ids = []
+        for user_id in selected_users:
+            team_id = user_team_map.get(user_id)
+            if team_id is None:
+                team_id = random.choice(all_teams)
+            if team_id not in team_ids:
+                team_ids.append(team_id)
+        
+        num_teams = len(team_ids)
+        bracket_size = next_power_of_two(num_teams)
+        num_byes = bracket_size - num_teams
+
+        random.shuffle(team_ids)
+      
+        bracket_data = []
+        for index, team_id in enumerate(team_ids):
+            if index < num_byes:
+                round_number = 2
             else:
-                # If the user has no TeamID, select a random TeamID from Teams.
-                cursor.execute("SELECT TeamID FROM Teams ORDER BY RAND() LIMIT 1")
-                team_row = cursor.fetchone()
-                if team_row is not None:
-                    team_ids.add(team_row[0])
-        for team_id in team_ids:
+                round_number = 1
+            bracket_side = 'left' if index % 2 == 0 else 'right'
+            bracket_data.append({
+                'team_id': team_id,
+                'round': round_number,
+                'byes': 1 if round_number == 2 else 0,
+                'status': 'active',
+                'bracket_side': bracket_side,
+                'next_match_id': None  
+            })
+
+        for entry in bracket_data:
             cursor.execute(
                 """
                 INSERT INTO TournamentParticipants (TournamentID, TeamID, Round, Byes, Status, BracketSide, NextMatchID)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
-                (tournament_id, team_id, 0, 0, 'active', 'left', None),
+                (tournament_id, entry['team_id'], entry['round'], entry['byes'], entry['status'], entry['bracket_side'], entry['next_match_id'])
             )
 
     conn.commit()

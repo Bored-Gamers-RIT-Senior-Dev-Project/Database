@@ -232,12 +232,13 @@ def insert_tickets(n=80, users=[]):
     conn.commit()
 
 
-
+#TournamentParticipants now uses TeamID and additional columns.
 def insert_tournament_participants(users, tournaments):
     if not users or not tournaments:
         print("Error: No users or tournaments available.")
         return
 
+    # Build a map of UserID to TeamID for users that have a team.
     cursor.execute("SELECT UserID, TeamID FROM Users WHERE TeamID IS NOT NULL")
     user_team_map = {row[0]: row[1] for row in cursor.fetchall()}
     cursor.execute("SELECT TeamID FROM Teams")
@@ -288,7 +289,6 @@ def insert_tournament_participants(users, tournaments):
 
     conn.commit()
 
-
 def insert_tournament_facilitators(users, tournaments):
     if not users or not tournaments:
         print("Error: No users or tournaments available.")
@@ -308,42 +308,37 @@ def insert_tournament_facilitators(users, tournaments):
     conn.commit()
 
 
-# insert complete single elim tournament bracket in the database.
+# insert complete single elimination tournament bracket
 def simulate_tournament_bracket(tournament_id):
-    cursor.execute("SELECT TeamID FROM TournamentParticipants WHERE TournamentID = %s", (tournament_id,))
+    # fetch participating teams from TournamentParticipants for the given tournament that are still active
+    cursor.execute("SELECT TeamID FROM TournamentParticipants WHERE TournamentID = %s AND Status = 'active'", (tournament_id,))
     rows = cursor.fetchall()
     teams = [row[0] for row in rows]
     if not teams:
-        #print(f"Tournament {tournament_id} has no participating teams.")
+        print(f"Tournament {tournament_id} has no active participating teams.")
         return
 
     #print(f"Simulating bracket for Tournament {tournament_id} with teams: {teams}")
-    random.shuffle(teams)
-    bracket_size = 2 ** math.ceil(math.log2(len(teams)))
-    num_byes = bracket_size - len(teams)
-    #print(f"Bracket size: {bracket_size}, Byes: {num_byes}")
-
-    next_round = teams[:num_byes] if num_byes > 0 else []
-    playing_teams = teams[num_byes:]
     round_number = 1
-
-    while playing_teams or len(next_round) > 1:
+    while len(teams) > 1:
         #print(f"--- Round {round_number} ---")
-        current_round = next_round + playing_teams
         next_round = []
-        if len(current_round) % 2 != 0:
-            bye_team = current_round.pop(0)
+        # if odd number, give a bye to the first team
+        if len(teams) % 2 != 0:
+            bye_team = teams.pop(0)
             next_round.append(bye_team)
             #print(f"Team {bye_team} receives a bye to next round.")
-        for i in range(0, len(current_round), 2):
-            t1 = current_round[i]
-            t2 = current_round[i+1]
+        # pair teams and simulate matches
+        for i in range(0, len(teams), 2):
+            t1 = teams[i]
+            t2 = teams[i+1]
             score1 = random.randint(0, 10)
             score2 = random.randint(0, 10)
             if score1 == score2:
                 winner = random.choice([t1, t2])
             else:
                 winner = t1 if score1 > score2 else t2
+            loser = t1 if winner == t2 else t2
             match_time = datetime.now()
             cursor.execute(
                 """
@@ -353,23 +348,36 @@ def simulate_tournament_bracket(tournament_id):
                 (tournament_id, t1, t2, score1, score2, winner, match_time),
             )
             match_id = cursor.lastrowid
+            #update the winning team's TournamentParticipants record with NextMatchID
             cursor.execute(
                 "UPDATE TournamentParticipants SET NextMatchID = %s WHERE TournamentID = %s AND TeamID = %s",
                 (match_id, tournament_id, winner)
             )
+            # update the losing team's TournamentParticipants record to 'lost'
+            cursor.execute(
+                "UPDATE TournamentParticipants SET Status = 'lost' WHERE TournamentID = %s AND TeamID = %s",
+                (tournament_id, loser)
+            )
             #print(f"Match: {t1} vs {t2} | Score: {score1}-{score2} | Winner: {winner} (Match ID: {match_id})")
             next_round.append(winner)
         conn.commit()
-        playing_teams = []
+        teams = next_round
         round_number += 1
 
-    champion = next_round[0] if next_round else None
+    # final winner
+    champion = teams[0]
+    cursor.execute(
+        "UPDATE TournamentParticipants SET Status = 'winner' WHERE TournamentID = %s AND TeamID = %s",
+        (tournament_id, champion)
+    )
+    conn.commit()
     #print(f"Tournament {tournament_id} Champion: {champion}")
+
 
 
 def assign_users_to_teams(users, teams):
     if not users or not teams:
-        print("Error: No users or teams available.")
+        #print("Error: No users or teams available.")
         return
 
     for user_id in users:
@@ -397,7 +405,7 @@ insert_tournament_facilitators(users=users, tournaments=tournaments)
 
 assign_users_to_teams(users=users, teams=teams)
 
-# tournament bracket for each tournament (single elimination, randomized number of teams)
+# Simulate a complete tournament bracket for each tournament (single elimination, randomized number of teams)
 for t in tournaments:
     simulate_tournament_bracket(t)
 

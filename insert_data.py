@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from faker import Faker
 import getpass
 
-
 fake = Faker()
 
 MYSQL_USER = "root"
@@ -40,7 +39,7 @@ def insert_universities(n=20):
             """
             INSERT INTO Universities (UniversityName, Location, LogoURL, BannerURL, Description, WebsiteURL)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """,
+            """,
             (name, location, logo_url, banner_url, description, website),
         )
 
@@ -50,7 +49,6 @@ def insert_universities(n=20):
     return universities
 
 
-# Added all user roles
 def insert_roles():
     roles = [
         ("Spectator", "Track tournament progress and learn about participating universities."),
@@ -71,7 +69,7 @@ def insert_roles():
             INSERT INTO Roles (RoleName, Description)
             VALUES (%s, %s)
             ON DUPLICATE KEY UPDATE RoleName=VALUES(RoleName)
-        """,
+            """,
             (role_name, description),
         )
 
@@ -83,7 +81,6 @@ def insert_roles():
     #print("Roles retrieved:", role_ids) 
     
     return role_ids
-
 
 
 def insert_users(n=200, university_ids=[], role_ids=[]):
@@ -112,7 +109,7 @@ def insert_users(n=200, university_ids=[], role_ids=[]):
             """
             INSERT INTO Users (FirstName, LastName, Username, Email, FirebaseUID, ProfileImageURL, Bio, Paid, RoleID, UniversityID, IsValidated)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """,
+            """,
             (
                 fake.first_name(),
                 fake.last_name(),
@@ -148,7 +145,7 @@ def insert_teams(n=50, university_ids=[], user_ids=[]):
             """
             INSERT INTO Teams (UniversityID, TeamName, ProfileImageURL, Description, TeamLeaderID, IsApproved)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """,
+            """,
             (
                 random.choice(university_ids),
                 team_name,
@@ -184,7 +181,7 @@ def insert_tournaments(n=20):
             """
             INSERT INTO Tournaments (TournamentName, StartDate, EndDate, Status, Location)
             VALUES (%s, %s, %s, %s, %s)
-        """,
+            """,
             (tournament_name, start_date, end_date, status, location),
         )
 
@@ -206,7 +203,7 @@ def insert_matches(n=100, tournaments=[], teams=[]):
             """
             INSERT INTO Matches (TournamentID, Team1ID, Team2ID, Score1, Score2, WinnerID, MatchTime)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """,
+            """,
             (tournament_id, team1, team2, score1, score2, winner, match_time),
         )
 
@@ -229,27 +226,58 @@ def insert_tickets(n=80, users=[]):
             """
             INSERT INTO Tickets (UserID, Subject, Description, Status, TicketType, ReportedUserID)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """,
+            """,
             (user_id, subject, description, status, ticket_type, reported_user),
         )
 
     conn.commit()
 
 
-# Forgot this table (whoops)
+# TournamentParticipants now uses TeamID and additional columns.
 def insert_tournament_participants(users, tournaments):
     if not users or not tournaments:
         print("Error: No users or tournaments available.")
         return
 
     for tournament_id in tournaments:
-        participants = random.sample(
-            users, min(len(users), random.randint(5, 20))
-        )  # Randomly assign 5-20 users per tournament
+        participants = random.sample(users, min(len(users), random.randint(5, 20)))
+        team_ids = set()
         for user_id in participants:
+            # Look up the user's TeamID.
+            cursor.execute("SELECT TeamID FROM Users WHERE UserID = %s", (user_id,))
+            result = cursor.fetchone()
+            if result is not None and result[0] is not None:
+                team_ids.add(result[0])
+            else:
+                # If the user has no TeamID, select a random TeamID from Teams.
+                cursor.execute("SELECT TeamID FROM Teams ORDER BY RAND() LIMIT 1")
+                team_row = cursor.fetchone()
+                if team_row is not None:
+                    team_ids.add(team_row[0])
+        for team_id in team_ids:
             cursor.execute(
                 """
-                INSERT INTO TournamentParticipants (TournamentID, UserID)
+                INSERT INTO TournamentParticipants (TournamentID, TeamID, Round, Byes, Status, BracketSide, NextMatchID)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (tournament_id, team_id, 0, 0, 'active', 'left', None),
+            )
+
+    conn.commit()
+
+
+# Insert into TournamentFacilitators table.
+def insert_tournament_facilitators(users, tournaments):
+    if not users or not tournaments:
+        print("Error: No users or tournaments available.")
+        return
+
+    for tournament_id in tournaments:
+        facilitators = random.sample(users, min(len(users), random.randint(1, 5)))
+        for user_id in facilitators:
+            cursor.execute(
+                """
+                INSERT INTO TournamentFacilitators (TournamentID, UserID)
                 VALUES (%s, %s)
                 """,
                 (tournament_id, user_id),
@@ -260,7 +288,6 @@ def insert_tournament_participants(users, tournaments):
 
 # Assign users a team after both user and team has been created
 def assign_users_to_teams(users, teams):
-
     if not users or not teams:
         print("Error: No users or teams available.")
         return
@@ -270,7 +297,7 @@ def assign_users_to_teams(users, teams):
         cursor.execute(
             """
             UPDATE Users SET TeamID = %s WHERE UserID = %s
-        """,
+            """,
             (team_id, user_id),
         )
 
@@ -286,9 +313,9 @@ tournaments = insert_tournaments()
 insert_matches(tournaments=tournaments, teams=teams)
 insert_tickets(users=users)
 insert_tournament_participants(users=users, tournaments=tournaments)
+insert_tournament_facilitators(users=users, tournaments=tournaments)
 
 assign_users_to_teams(users=users, teams=teams)
-
 
 cursor.close()
 conn.close()

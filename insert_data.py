@@ -5,6 +5,7 @@ import string
 from datetime import datetime, timedelta
 from faker import Faker
 import getpass
+import math
 
 fake = Faker()
 
@@ -77,8 +78,6 @@ def insert_roles():
     
     cursor.execute("SELECT RoleID FROM Roles")
     role_ids = [row[0] for row in cursor.fetchall()]
-
-    #print("Roles retrieved:", role_ids) 
     
     return role_ids
 
@@ -233,40 +232,63 @@ def insert_tickets(n=80, users=[]):
     conn.commit()
 
 
-# TournamentParticipants now uses TeamID and additional columns.
+#tournamentParticipants now uses TeamID and additional columns
 def insert_tournament_participants(users, tournaments):
     if not users or not tournaments:
         print("Error: No users or tournaments available.")
         return
 
+    #build a map of UserID to TeamID for users that have a team
+    cursor.execute("SELECT UserID, TeamID FROM Users WHERE TeamID IS NOT NULL")
+    user_team_map = {row[0]: row[1] for row in cursor.fetchall()}
+    cursor.execute("SELECT TeamID FROM Teams")
+    all_teams = [row[0] for row in cursor.fetchall()]
+    if not all_teams:
+        print("No teams available.")
+        return
+
     for tournament_id in tournaments:
-        participants = random.sample(users, min(len(users), random.randint(5, 20)))
+        selected_users = random.sample(users, min(len(users), random.randint(5, 20)))
         team_ids = set()
-        for user_id in participants:
-            # Look up the user's TeamID.
-            cursor.execute("SELECT TeamID FROM Users WHERE UserID = %s", (user_id,))
-            result = cursor.fetchone()
-            if result is not None and result[0] is not None:
-                team_ids.add(result[0])
+        for user_id in selected_users:
+            team_id = user_team_map.get(user_id)
+            if team_id is None:
+                team_id = random.choice(all_teams)
+            team_ids.add(team_id)
+        team_ids = list(team_ids)
+        num_teams = len(team_ids)
+        bracket_size = 2 ** math.ceil(math.log2(num_teams)) if num_teams > 0 else 0
+        num_byes = bracket_size - num_teams
+
+        random.shuffle(team_ids)
+      
+        bracket_data = []
+        for index, team_id in enumerate(team_ids):
+            if index < num_byes:
+                round_number = 2  
             else:
-                # If the user has no TeamID, select a random TeamID from Teams.
-                cursor.execute("SELECT TeamID FROM Teams ORDER BY RAND() LIMIT 1")
-                team_row = cursor.fetchone()
-                if team_row is not None:
-                    team_ids.add(team_row[0])
-        for team_id in team_ids:
+                round_number = 1
+            bracket_side = 'left' if index % 2 == 0 else 'right'
+            bracket_data.append({
+                'team_id': team_id,
+                'round': round_number,
+                'byes': 1 if round_number == 2 else 0,
+                'status': 'active',
+                'bracket_side': bracket_side,
+                'next_match_id': None  
+            })
+
+        for entry in bracket_data:
             cursor.execute(
                 """
                 INSERT INTO TournamentParticipants (TournamentID, TeamID, Round, Byes, Status, BracketSide, NextMatchID)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
-                (tournament_id, team_id, 0, 0, 'active', 'left', None),
+                (tournament_id, entry['team_id'], entry['round'], entry['byes'], entry['status'], entry['bracket_side'], entry['next_match_id'])
             )
 
     conn.commit()
 
-
-# Insert into TournamentFacilitators table.
 def insert_tournament_facilitators(users, tournaments):
     if not users or not tournaments:
         print("Error: No users or tournaments available.")
@@ -286,7 +308,77 @@ def insert_tournament_facilitators(users, tournaments):
     conn.commit()
 
 
-# Assign users a team after both user and team has been created
+def simulate_tournament_bracket(tournament_id):
+    #fetch participating teams from TournamentParticipants for the given tournament that are still active.
+    cursor.execute("SELECT TeamID FROM TournamentParticipants WHERE TournamentID = %s AND Status = 'active'", (tournament_id,))
+    rows = cursor.fetchall()
+    teams = [row[0] for row in rows]
+    if not teams:
+        print(f"Tournament {tournament_id} has no active participating teams.")
+        return
+
+    #print(f"Simulating bracket for Tournament {tournament_id} with teams: {teams}")
+    round_number = 1
+    #set a base start date for the tournament
+    base_datetime = datetime.now() + timedelta(days=random.randint(1, 5))
+
+    while len(teams) > 1:
+        #print(f"--- Round {round_number} ---")
+        next_round = []
+        #if odd number, give a bye to the first team.
+        if len(teams) % 2 != 0:
+            bye_team = teams.pop(0)
+            next_round.append(bye_team)
+            #print(f"Team {bye_team} receives a bye to next round.")
+        for i in range(0, len(teams), 2):
+            t1 = teams[i]
+            t2 = teams[i+1]
+            score1 = random.randint(0, 10)
+            score2 = random.randint(0, 10)
+            if score1 == score2:
+                winner = random.choice([t1, t2])
+            else:
+                winner = t1 if score1 > score2 else t2
+            loser = t1 if winner == t2 else t2
+            # calculate a match datetime
+            match_date = base_datetime + timedelta(days=round_number - 1)
+            match_hour = random.randint(10, 20)
+            match_minute = random.randint(0, 59)
+            match_datetime = match_date.replace(hour=match_hour, minute=match_minute, second=0, microsecond=0)
+            cursor.execute(
+                """
+                INSERT INTO Matches (TournamentID, Team1ID, Team2ID, Score1, Score2, WinnerID, MatchTime)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (tournament_id, t1, t2, score1, score2, winner, match_datetime)
+            )
+            match_id = cursor.lastrowid
+            #update the winning team's TournamentParticipants record with NextMatchID
+            cursor.execute(
+                "UPDATE TournamentParticipants SET NextMatchID = %s WHERE TournamentID = %s AND TeamID = %s",
+                (match_id, tournament_id, winner)
+            )
+            #update the losing team's TournamentParticipants record to 'lost'
+            cursor.execute(
+                "UPDATE TournamentParticipants SET Status = 'lost' WHERE TournamentID = %s AND TeamID = %s",
+                (tournament_id, loser)
+            )
+            #print(f"Match: {t1} vs {t2} | Score: {score1}-{score2} | Winner: {winner} (Match ID: {match_id}) at {match_datetime.strftime('%Y-%m-%d %H:%M')}")
+            next_round.append(winner)
+        conn.commit()
+        teams = next_round
+        round_number += 1
+
+    # final winner
+    champion = teams[0]
+    cursor.execute(
+        "UPDATE TournamentParticipants SET Status = 'winner' WHERE TournamentID = %s AND TeamID = %s",
+        (tournament_id, champion)
+    )
+    conn.commit()
+    #print(f"Tournament {tournament_id} Champion: {champion}")
+
+
 def assign_users_to_teams(users, teams):
     if not users or not teams:
         print("Error: No users or teams available.")
@@ -310,14 +402,18 @@ roles = insert_roles()
 users = insert_users(university_ids=universities, role_ids=roles)
 teams = insert_teams(university_ids=universities, user_ids=users)
 tournaments = insert_tournaments()
-insert_matches(tournaments=tournaments, teams=teams)
+#insert_matches(tournaments=tournaments, teams=teams)
 insert_tickets(users=users)
 insert_tournament_participants(users=users, tournaments=tournaments)
 insert_tournament_facilitators(users=users, tournaments=tournaments)
 
 assign_users_to_teams(users=users, teams=teams)
 
+# Simulate a complete tournament bracket for each tournament (single elimination, randomized number of teams)
+for t in tournaments:
+    simulate_tournament_bracket(t)
+
 cursor.close()
 conn.close()
 
-print("Dummy data inserted successfully!")
+print("Dummy data inserted and tournament brackets simulated successfully!")

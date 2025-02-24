@@ -90,6 +90,7 @@ CREATE TABLE TournamentParticipants (
     Status ENUM('active', 'lost', 'winner', 'disqualified') NOT NULL DEFAULT 'active',
     BracketSide ENUM('left', 'right') NOT NULL DEFAULT 'left', 
     NextMatchID INT NULL,
+    BracketOrder INT NOT NULL DEFAULT 0,
     PRIMARY KEY (TournamentID, TeamID),
     FOREIGN KEY (TournamentID) REFERENCES Tournaments(TournamentID),
     FOREIGN KEY (TeamID) REFERENCES Teams(TeamID)

@@ -1,10 +1,10 @@
 # MySQL Database Configuration
 Before running the script, ensure that you have the following MySQL database details:
 
-Host: localhost
-User: root
-Database Name: BoardGame
-Password: The password for your MySQL root user.
+1. Host: localhost
+2. User: root
+3. Databse Name: BoardGame
+4. Password: Your password for root@localhost
 
 # Linux Users
 1. Navigate to the Database repo `cd path/to/database/repo`

@@ -1,3 +1,11 @@
+#MySQL Database Configuration
+Before running the script, ensure that you have the following MySQL database details:
+
+Host: localhost
+User: root
+Database Name: BoardGame
+Password: The password for your MySQL root user.
+
 # Linux Users
 1. Navigate to the Database repo `cd path/to/database/repo`
 2. add executable permissions to the script `chmod 755 update_database.py`

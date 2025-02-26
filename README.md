@@ -1,4 +1,4 @@
-#MySQL Database Configuration
+# MySQL Database Configuration
 Before running the script, ensure that you have the following MySQL database details:
 
 Host: localhost

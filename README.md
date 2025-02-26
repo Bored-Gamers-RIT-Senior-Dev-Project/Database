@@ -34,11 +34,13 @@
       2. Install the dependencies: `pip install .`
 2. Run the script `python3 insert_data.py`
 3. This script will insert
-      1. 200 Users
-      2. 20 Univeristies
-      3. 3 Roles
-      4. 50 Teams
-      5. 20 Tournaments
-      6. 100 Matches
-      7. 80 Tickets
-4. Deactivate the environment: `deactivate`
+   1. 200 Users
+   2. 20 Universities
+   3. 8 Roles (defined in the insert_roles function)
+   4. 50 Teams
+   5. 20 Tournaments
+   6. 100 Matches (these are generated in a simulated single-elimination tournament bracket)
+   7. 80 Tickets (for different types such as "Bug Report", "General Inquiry", etc.)
+   8. Tournament Participants (random assignment to teams and tournaments)
+   9. Tournament Facilitators (users assigned to help facilitate tournaments)
+5. Deactivate the environment: `deactivate`

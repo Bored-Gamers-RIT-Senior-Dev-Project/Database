@@ -128,3 +128,24 @@ ADD CONSTRAINT FK_Teams_TeamLeaderID FOREIGN KEY (TeamLeaderID) REFERENCES users
 -- Add foreign key for TeamID in tblUsers
 ALTER TABLE users
 ADD CONSTRAINT FK_Users_TeamID FOREIGN KEY (TeamID) REFERENCES teams(TeamID);
+
+
+-- Indexes for foreign key columns
+CREATE INDEX idx_users_university_id ON users (UniversityID);
+CREATE INDEX idx_users_role_id ON users (RoleID);
+CREATE INDEX idx_teams_university_id ON teams (UniversityID);
+CREATE INDEX idx_teams_team_leader_id ON teams (TeamLeaderID);
+CREATE INDEX idx_matches_tournament_id ON matches (TournamentID);
+CREATE INDEX idx_matches_team1_id ON matches (Team1ID);
+CREATE INDEX idx_matches_team2_id ON matches (Team2ID);
+CREATE INDEX idx_tournament_participants_tournament_id ON tournament_participants (TournamentID);
+CREATE INDEX idx_tournament_participants_team_id ON tournament_participants (TeamID);
+CREATE INDEX idx_tournament_facilitators_tournament_id ON tournament_facilitators (TournamentID);
+CREATE INDEX idx_tournament_facilitators_user_id ON tournament_facilitators (UserID);
+CREATE INDEX idx_tickets_user_id ON tickets (UserID);
+CREATE INDEX idx_tickets_reported_user_id ON tickets (ReportedUserID);
+
+-- Indexes for frequently queried columns
+CREATE INDEX idx_tournaments_tournament_name ON tournaments (TournamentName);
+CREATE INDEX idx_users_username ON users (Username);
+CREATE INDEX idx_users_email ON users (Email);

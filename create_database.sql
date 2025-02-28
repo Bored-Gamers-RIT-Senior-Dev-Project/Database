@@ -5,7 +5,7 @@ CREATE DATABASE BoardGame;
 USE BoardGame;
 
 
-CREATE TABLE Universities (
+CREATE TABLE universities (
     UniversityID INT AUTO_INCREMENT PRIMARY KEY,
     UniversityName VARCHAR(255) NOT NULL,
     Location VARCHAR(255) NOT NULL,
@@ -16,14 +16,14 @@ CREATE TABLE Universities (
 );
 
 
-CREATE TABLE Roles (
+CREATE TABLE roles (
     RoleID INT AUTO_INCREMENT PRIMARY KEY,
     RoleName VARCHAR(50) NOT NULL UNIQUE,
     Description TEXT NOT NULL
 );
 
 
-CREATE TABLE Users (
+CREATE TABLE users (
     UserID INT AUTO_INCREMENT PRIMARY KEY,
     FirstName VARCHAR(255) NOT NULL,
     LastName VARCHAR(255) NOT NULL,
@@ -38,12 +38,12 @@ CREATE TABLE Users (
     RoleID INT NOT NULL,
     UniversityID INT NULL,
     IsValidated BOOLEAN NOT NULL DEFAULT FALSE,
-    FOREIGN KEY (RoleID) REFERENCES Roles(RoleID),
-    FOREIGN KEY (UniversityID) REFERENCES Universities(UniversityID)
+    FOREIGN KEY (RoleID) REFERENCES roles(RoleID),
+    FOREIGN KEY (UniversityID) REFERENCES universities(UniversityID)
 );
 
 -- Create Teams table without the foreign key constraint for TeamLeaderID
-CREATE TABLE Teams (
+CREATE TABLE teams (
     TeamID INT AUTO_INCREMENT PRIMARY KEY,
     UniversityID INT NOT NULL,
     TeamName VARCHAR(255) NOT NULL,
@@ -52,11 +52,11 @@ CREATE TABLE Teams (
     Description TEXT,
     TeamLeaderID INT NOT NULL,
     IsApproved BOOLEAN NOT NULL DEFAULT FALSE,
-    FOREIGN KEY (UniversityID) REFERENCES Universities(UniversityID)
+    FOREIGN KEY (UniversityID) REFERENCES universities(UniversityID)
 );
 
 
-CREATE TABLE Tournaments (
+CREATE TABLE tournaments (
     TournamentID INT AUTO_INCREMENT PRIMARY KEY,
     TournamentName VARCHAR(255) NOT NULL,
     StartDate DATE NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE Tournaments (
 );
 
 
-CREATE TABLE Matches (
+CREATE TABLE matches (
     MatchID INT AUTO_INCREMENT PRIMARY KEY,
     TournamentID INT NOT NULL,
     Team1ID INT NOT NULL,
@@ -75,14 +75,14 @@ CREATE TABLE Matches (
     Score2 INT NOT NULL DEFAULT 0,
     WinnerID INT,
     MatchTime DATETIME NOT NULL,
-    FOREIGN KEY (TournamentID) REFERENCES Tournaments(TournamentID),
-    FOREIGN KEY (Team1ID) REFERENCES Teams(TeamID),
-    FOREIGN KEY (Team2ID) REFERENCES Teams(TeamID),
-    FOREIGN KEY (WinnerID) REFERENCES Teams(TeamID)
+    FOREIGN KEY (TournamentID) REFERENCES tournaments(TournamentID),
+    FOREIGN KEY (Team1ID) REFERENCES teams(TeamID),
+    FOREIGN KEY (Team2ID) REFERENCES teams(TeamID),
+    FOREIGN KEY (WinnerID) REFERENCES teams(TeamID)
 );
 
 
-CREATE TABLE TournamentParticipants (
+CREATE TABLE tournament_participants (
     TournamentID INT NOT NULL,
     TeamID INT NOT NULL,
     Round INT NOT NULL DEFAULT 0,
@@ -92,22 +92,22 @@ CREATE TABLE TournamentParticipants (
     NextMatchID INT NULL,
     BracketOrder INT NOT NULL DEFAULT 0,
     PRIMARY KEY (TournamentID, TeamID),
-    FOREIGN KEY (TournamentID) REFERENCES Tournaments(TournamentID),
-    FOREIGN KEY (TeamID) REFERENCES Teams(TeamID)
+    FOREIGN KEY (TournamentID) REFERENCES tournaments(TournamentID),
+    FOREIGN KEY (TeamID) REFERENCES teams(TeamID)
 );
 
 
 
-CREATE TABLE TournamentFacilitators (
+CREATE TABLE tournament_facilitators (
     TournamentID INT NOT NULL,
     UserID INT NOT NULL,
     PRIMARY KEY (TournamentID, UserID),
-    FOREIGN KEY (TournamentID) REFERENCES Tournaments(TournamentID),
-    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+    FOREIGN KEY (TournamentID) REFERENCES tournaments(TournamentID),
+    FOREIGN KEY (UserID) REFERENCES users(UserID)
 );
 
 
-CREATE TABLE Tickets (
+CREATE TABLE tickets (
     TicketID INT AUTO_INCREMENT PRIMARY KEY,
     UserID INT NOT NULL,
     Subject VARCHAR(255) NOT NULL,
@@ -117,14 +117,14 @@ CREATE TABLE Tickets (
     ReportedUserID INT,
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (ReportedUserID) REFERENCES Users(UserID)
+    FOREIGN KEY (UserID) REFERENCES users(UserID),
+    FOREIGN KEY (ReportedUserID) REFERENCES users(UserID)
 );
 
 -- Add foreign key for TeamLeaderID in tblTeams
-ALTER TABLE Teams
-ADD CONSTRAINT FK_Teams_TeamLeaderID FOREIGN KEY (TeamLeaderID) REFERENCES Users(UserID);
+ALTER TABLE teams
+ADD CONSTRAINT FK_Teams_TeamLeaderID FOREIGN KEY (TeamLeaderID) REFERENCES users(UserID);
 
 -- Add foreign key for TeamID in tblUsers
-ALTER TABLE Users
-ADD CONSTRAINT FK_Users_TeamID FOREIGN KEY (TeamID) REFERENCES Teams(TeamID);
+ALTER TABLE users
+ADD CONSTRAINT FK_Users_TeamID FOREIGN KEY (TeamID) REFERENCES teams(TeamID);

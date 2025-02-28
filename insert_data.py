@@ -38,7 +38,7 @@ def insert_universities(n=20):
 
         cursor.execute(
             """
-            INSERT INTO Universities (UniversityName, Location, LogoURL, BannerURL, Description, WebsiteURL)
+            INSERT INTO universities (UniversityName, Location, LogoURL, BannerURL, Description, WebsiteURL)
             VALUES (%s, %s, %s, %s, %s, %s)
             """,
             (name, location, logo_url, banner_url, description, website),
@@ -67,7 +67,7 @@ def insert_roles():
     for role_name, description in roles:
         cursor.execute(
             """
-            INSERT INTO Roles (RoleName, Description)
+            INSERT INTO roles (RoleName, Description)
             VALUES (%s, %s)
             ON DUPLICATE KEY UPDATE RoleName=VALUES(RoleName)
             """,
@@ -76,7 +76,7 @@ def insert_roles():
 
     conn.commit()
     
-    cursor.execute("SELECT RoleID FROM Roles")
+    cursor.execute("SELECT RoleID FROM roles")
     role_ids = [row[0] for row in cursor.fetchall()]
     
     return role_ids
@@ -106,7 +106,7 @@ def insert_users(n=200, university_ids=[], role_ids=[]):
 
         cursor.execute(
             """
-            INSERT INTO Users (FirstName, LastName, Username, Email, FirebaseUID, ProfileImageURL, Bio, Paid, RoleID, UniversityID, IsValidated)
+            INSERT INTO users (FirstName, LastName, Username, Email, FirebaseUID, ProfileImageURL, Bio, Paid, RoleID, UniversityID, IsValidated)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
@@ -142,7 +142,7 @@ def insert_teams(n=50, university_ids=[], user_ids=[]):
 
         cursor.execute(
             """
-            INSERT INTO Teams (UniversityID, TeamName, ProfileImageURL, Description, TeamLeaderID, IsApproved)
+            INSERT INTO teams (UniversityID, TeamName, ProfileImageURL, Description, TeamLeaderID, IsApproved)
             VALUES (%s, %s, %s, %s, %s, %s)
             """,
             (
@@ -178,7 +178,7 @@ def insert_tournaments(n=20):
 
         cursor.execute(
             """
-            INSERT INTO Tournaments (TournamentName, StartDate, EndDate, Status, Location)
+            INSERT INTO tournaments (TournamentName, StartDate, EndDate, Status, Location)
             VALUES (%s, %s, %s, %s, %s)
             """,
             (tournament_name, start_date, end_date, status, location),
@@ -200,7 +200,7 @@ def insert_matches(n=100, tournaments=[], teams=[]):
 
         cursor.execute(
             """
-            INSERT INTO Matches (TournamentID, Team1ID, Team2ID, Score1, Score2, WinnerID, MatchTime)
+            INSERT INTO matches (TournamentID, Team1ID, Team2ID, Score1, Score2, WinnerID, MatchTime)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
             (tournament_id, team1, team2, score1, score2, winner, match_time),
@@ -223,7 +223,7 @@ def insert_tickets(n=80, users=[]):
 
         cursor.execute(
             """
-            INSERT INTO Tickets (UserID, Subject, Description, Status, TicketType, ReportedUserID)
+            INSERT INTO tickets (UserID, Subject, Description, Status, TicketType, ReportedUserID)
             VALUES (%s, %s, %s, %s, %s, %s)
             """,
             (user_id, subject, description, status, ticket_type, reported_user),
@@ -239,9 +239,9 @@ def insert_tournament_participants(users, tournaments):
         return
 
     #build a map of UserID to TeamID for users that have a team
-    cursor.execute("SELECT UserID, TeamID FROM Users WHERE TeamID IS NOT NULL")
+    cursor.execute("SELECT UserID, TeamID FROM users WHERE TeamID IS NOT NULL")
     user_team_map = {row[0]: row[1] for row in cursor.fetchall()}
-    cursor.execute("SELECT TeamID FROM Teams")
+    cursor.execute("SELECT TeamID FROM teams")
     all_teams = [row[0] for row in cursor.fetchall()]
     if not all_teams:
         print("No teams available.")
@@ -281,7 +281,7 @@ def insert_tournament_participants(users, tournaments):
         for entry in bracket_data:
             cursor.execute(
                 """
-                INSERT INTO TournamentParticipants (TournamentID, TeamID, Round, Byes, Status, BracketSide, NextMatchID)
+                INSERT INTO tournament_participants (TournamentID, TeamID, Round, Byes, Status, BracketSide, NextMatchID)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
                 (tournament_id, entry['team_id'], entry['round'], entry['byes'], entry['status'], entry['bracket_side'], entry['next_match_id'])
@@ -299,7 +299,7 @@ def insert_tournament_facilitators(users, tournaments):
         for user_id in facilitators:
             cursor.execute(
                 """
-                INSERT INTO TournamentFacilitators (TournamentID, UserID)
+                INSERT INTO tournament_facilitators (TournamentID, UserID)
                 VALUES (%s, %s)
                 """,
                 (tournament_id, user_id),
@@ -310,7 +310,7 @@ def insert_tournament_facilitators(users, tournaments):
 
 def simulate_tournament_bracket(tournament_id):
     #fetch participating teams from TournamentParticipants for the given tournament that are still active.
-    cursor.execute("SELECT TeamID FROM TournamentParticipants WHERE TournamentID = %s AND Status = 'active'", (tournament_id,))
+    cursor.execute("SELECT TeamID FROM tournament_participants WHERE TournamentID = %s AND Status = 'active'", (tournament_id,))
     rows = cursor.fetchall()
     teams = [row[0] for row in rows]
     if not teams:
@@ -347,7 +347,7 @@ def simulate_tournament_bracket(tournament_id):
             match_datetime = match_date.replace(hour=match_hour, minute=match_minute, second=0, microsecond=0)
             cursor.execute(
                 """
-                INSERT INTO Matches (TournamentID, Team1ID, Team2ID, Score1, Score2, WinnerID, MatchTime)
+                INSERT INTO matches (TournamentID, Team1ID, Team2ID, Score1, Score2, WinnerID, MatchTime)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
                 (tournament_id, t1, t2, score1, score2, winner, match_datetime)
@@ -355,12 +355,12 @@ def simulate_tournament_bracket(tournament_id):
             match_id = cursor.lastrowid
             #update the winning team's TournamentParticipants record with NextMatchID
             cursor.execute(
-                "UPDATE TournamentParticipants SET NextMatchID = %s WHERE TournamentID = %s AND TeamID = %s",
+                "UPDATE tournament_participants SET NextMatchID = %s WHERE TournamentID = %s AND TeamID = %s",
                 (match_id, tournament_id, winner)
             )
             #update the losing team's TournamentParticipants record to 'lost'
             cursor.execute(
-                "UPDATE TournamentParticipants SET Status = 'lost' WHERE TournamentID = %s AND TeamID = %s",
+                "UPDATE tournament_participants SET Status = 'lost' WHERE TournamentID = %s AND TeamID = %s",
                 (tournament_id, loser)
             )
             #print(f"Match: {t1} vs {t2} | Score: {score1}-{score2} | Winner: {winner} (Match ID: {match_id}) at {match_datetime.strftime('%Y-%m-%d %H:%M')}")
@@ -372,7 +372,7 @@ def simulate_tournament_bracket(tournament_id):
     # final winner
     champion = teams[0]
     cursor.execute(
-        "UPDATE TournamentParticipants SET Status = 'winner' WHERE TournamentID = %s AND TeamID = %s",
+        "UPDATE tournament_participants SET Status = 'winner' WHERE TournamentID = %s AND TeamID = %s",
         (tournament_id, champion)
     )
     conn.commit()
@@ -388,7 +388,7 @@ def assign_users_to_teams(users, teams):
         team_id = random.choice(teams)  # Pick a random existing team
         cursor.execute(
             """
-            UPDATE Users SET TeamID = %s WHERE UserID = %s
+            UPDATE users SET TeamID = %s WHERE UserID = %s
             """,
             (team_id, user_id),
         )

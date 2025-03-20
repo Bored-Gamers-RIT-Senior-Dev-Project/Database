@@ -121,6 +121,33 @@ CREATE TABLE tickets (
     FOREIGN KEY (ReportedUserID) REFERENCES users(UserID)
 );
 
+CREATE TABLE user_update (
+    UserUpdateId INT AUTO_INCREMENT PRIMARY KEY,
+    UpdatedUserID INT NOT NULL,
+    ApprovedBy INT NULL,
+    RequestedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FirstName VARCHAR(255) NULL,
+    LastName VARCHAR(255) NULL,
+    Username VARCHAR(255) NULL,
+    Email VARCHAR(255) NULL,
+    ProfileImageURL VARCHAR(255) NULL,
+    Bio TEXT NULL,
+    FOREIGN KEY (UpdatedUserID) REFERENCES users(UserID),
+    FOREIGN KEY (ApprovedBy) REFERENCES users(UserID)
+);
+
+CREATE TABLE team_update (
+    TeamUpdateId INT AUTO_INCREMENT PRIMARY KEY,
+    UpdatedTeamID INT NOT NULL,
+    ApprovedBy INT NULL,
+    RequestedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    TeamName VARCHAR(255) NULL,
+    ProfileImageURL VARCHAR(255) NULL,
+    Description TEXT NULL,
+    FOREIGN KEY (UpdatedTeamID) REFERENCES teams(TeamID),
+    FOREIGN KEY (ApprovedBy) REFERENCES users(UserID)
+);
+
 -- Add foreign key for TeamLeaderID in tblTeams
 ALTER TABLE teams
 ADD CONSTRAINT FK_Teams_TeamLeaderID FOREIGN KEY (TeamLeaderID) REFERENCES users(UserID);

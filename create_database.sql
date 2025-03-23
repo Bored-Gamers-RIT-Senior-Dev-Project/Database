@@ -9,8 +9,8 @@ CREATE TABLE universities (
     UniversityID INT AUTO_INCREMENT PRIMARY KEY,
     UniversityName VARCHAR(255) NOT NULL,
     Location VARCHAR(255) NOT NULL,
-    LogoURL VARCHAR(255),
-    BannerURL VARCHAR(255),
+    LogoURL VARCHAR(512),
+    BannerURL VARCHAR(512),
     Description TEXT NOT NULL,
     WebsiteURL VARCHAR(255) NOT NULL
 );

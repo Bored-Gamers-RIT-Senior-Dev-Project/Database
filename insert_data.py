@@ -129,35 +129,34 @@ def insert_users(n=200, university_ids=[], role_ids=[]):
     return users
 
 
-def insert_teams(n=50, university_ids=[], user_ids=[]):
+def insert_teams(university_ids=[], user_ids=[], teams_per_university=4):
     teams = []
     generated_team_names = set()
-
-    for _ in range(n):
-        while True:
-            team_name = fake.word().capitalize() + " Team"
-            if team_name not in generated_team_names:
-                generated_team_names.add(team_name)
-                break
-
-        cursor.execute(
-            """
-            INSERT INTO teams (UniversityID, TeamName, ProfileImageURL, Description, TeamLeaderID, IsApproved)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """,
-            (
-                random.choice(university_ids),
-                team_name,
-                fake.image_url(),
-                fake.text(),
-                random.choice(user_ids),
-                random.choice([True, False]),
-            ),
-        )
-        teams.append(cursor.lastrowid)
-
+    for uni in university_ids:
+        for _ in range(teams_per_university):
+            while True:
+                team_name = fake.word().capitalize() + " Team"
+                if team_name not in generated_team_names:
+                    generated_team_names.add(team_name)
+                    break
+            cursor.execute(
+                """
+                INSERT INTO teams (UniversityID, TeamName, ProfileImageURL, Description, TeamLeaderID, IsApproved)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    uni,
+                    team_name,
+                    fake.image_url(),
+                    fake.text(),
+                    random.choice(user_ids),
+                    random.choice([True, False]),
+                ),
+            )
+            teams.append(cursor.lastrowid)
     conn.commit()
     return teams
+
 
 
 def insert_tournaments(n=20):

@@ -12,7 +12,8 @@ CREATE TABLE universities (
     LogoURL VARCHAR(512),
     BannerURL VARCHAR(512),
     Description TEXT NOT NULL,
-    WebsiteURL VARCHAR(255) NOT NULL
+    WebsiteURL VARCHAR(255) NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 

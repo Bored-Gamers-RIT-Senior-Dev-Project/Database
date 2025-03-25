@@ -27,12 +27,38 @@ except mysql.connector.Error as err:
 
 
 def insert_universities(n=20):
+    # List of valid university image URLs
+    image_urls = [
+        "https://imgs.search.brave.com/R3hK9P_n5HgZ1cGuiyXqq1VXFYLNyhKb1MvEZdxT2uU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTg0/NTkxMzUwL3Bob3Rv/L29oaW8tc3RhdGUt/dW5pdmVyc2l0eS5q/cGc_cz02MTJ4NjEy/Jnc9MCZrPTIwJmM9/OUtlaW9rX0V5RERJ/aUtSeGs4cG5lb0ls/UzJLQUVpdVBhcjZH/bVZqVWlxOD0",
+        "https://imgs.search.brave.com/5sFTqF4iwvQs0p8PAMeFnH0LlIPPs5wRgK55Vs2Cvlo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTQ1/NTUyMzgyOS9waG90/by91Y2xhLWNvcnJp/ZG9yLmpwZz9zPTYx/Mng2MTImdz0wJms9/MjAmYz1YUHFrQjdx/cU9obGFvUU1TYkt2/WDBkdDdNdy1mTUx1/LWZYcmlPNUpBbVZJ/PQ",
+        "https://imgs.search.brave.com/NbdsyUY0jjUWBtyRwzVc0gHwAhNYQRJ7moDHXnu6fJY/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTU3/MzMyMzE4L3Bob3Rv/L3VuaXZlcnNpdHkt/Y2FtcHVzLWhhcnZh/cmQuanBnP3M9NjEy/eDYxMiZ3PTAmaz0y/MCZjPW05TlBiSGVZ/OFV4bHdUbDNwQVA3/eDNDSkthVWhGNkdl/ZlRGNm5PSzZkOFk9",
+        "https://imgs.search.brave.com/7mT1c3UY7ud44Xz9FX-f8w1cGZFPlrJoAx-qyvbDpmI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTQ2/OTkzNzU2MS9waG90/by9saWJyYXJ5LWlu/dGVyaW9yLW94Zm9y/ZC11bml2ZXJzaXR5/LW94Zm9yZC1lbmds/YW5kLmpwZz9zPTYx/Mng2MTImdz0wJms9/MjAmYz1YZlJlQjhl/czNyWElVT0R0Tnc4/YW5CclZmSjVUWG9w/WEhNQkFGT2pPWEo4/PQ",
+        "https://imgs.search.brave.com/uMJmh-IT71Ca4mTiU4FmqC6Aa2UXgZn1INMxPV__L1A/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTU3/NTA1Mzk3L3Bob3Rv/L3F1YW5kcmFuZ2xl/LWxhd24tYXQtdGhl/LXVuaXZlcnNpdHkt/b2Ytd2FzaGluZ3Rv/bi5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9eTFUSWZmZ1Fh/TE44QW94WkNFeE54/bF93S29lTXE5eEl5/M19rYjhYWTJZZz0",
+        "https://imgs.search.brave.com/7HqbXdPpjK5W71GqtuOsijkxtGmeWKL-vd_zjlsE7Sw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTIz/NjI1ODE3MS9waG90/by9oYXJ2YXJkLW1l/bW9yaWFsLWhhbGwu/anBnP3M9NjEyeDYx/MiZ3PTAmaz0yMCZj/PXl3RS1tWU1ONUZL/NF9wVXZqbzQyLUJP/Z21vMTg1OThTVjZv/TnBEVlMwQUk9",
+        "https://imgs.search.brave.com/xxMER5mnfPJmX4CeX3E7Dzt0M7e_tKn67JwhEuu7LM0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTUz/NDc4OTgyL3Bob3Rv/L2dvaW5nLXRvLWNs/YXNzLmpwZz9zPTYx/Mng2MTImdz0wJms9/MjAmYz1taEtLNGtC/eTFZX2Q0MlVLaHNB/VTJKbzdLSVhDZUd6/Vkh4Z3hJeVIyTWxn/PQ",
+        "https://imgs.search.brave.com/lNjCDK2DocIxcQiXWrrx54Y3w7phax4PwNKLIOXdMHw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAyLzg3LzQ2LzMy/LzM2MF9GXzI4NzQ2/MzIwNF9La0Y4VjZs/Z2lWbHBsSU5XbU1k/R0liaWJ5OXlIUk5P/Yi5qcGc",
+        "https://imgs.search.brave.com/IPr98duPyGaIsXhxhr5uGijEZe8NY9pPPgQ8M7dCUbw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTMy/MzQyMDczNy9waG90/by9hZXJpYWwtb3Zl/ci1ub3J0aC1jYXJv/bGluYS1jZW50cmFs/LXVuaXZlcnNpdHkt/aW4tdGhlLXNwcmlu/Zy5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9S2dOdWRIeDEt/RG5mN1BhWnByYzZM/Z2V2b3lqQ1V0MkxW/LWNhMktrRGNIMD0",
+        "https://imgs.search.brave.com/cY1aBacTUAM2NxeVS1vgezbzB_KoDEDt47kfJEJmYZ8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/cGl4YWJheS5jb20v/cGhvdG8vMjAyMC8w/NS8xOC8yMi8xOC91/bml2ZXJzaXR5LTUx/ODg2MTBfMTI4MC5q/cGc",
+        "https://imgs.search.brave.com/Mzmdz7ANla0Yr3Rl-YBYPUs_KFT-_ypg9VyDVKIn7yc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAyLzgwLzIxLzIz/LzM2MF9GXzI4MDIx/MjMwNV9LZ1pkQ245/WjdXODR5dEV2Y1pW/MGlONmNpTTczY2Nx/bS5qcGc",
+        "https://imgs.search.brave.com/XzwsLvgUN_PRL1j0ZpLOxQnWWDhwP5RPLFsDpVkbsCw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/cGl4YWJheS5jb20v/cGhvdG8vMjAyMC8w/Mi8wNi8yMC80OC91/bmktNDgyNTQ3MV82/NDAuanBn",
+        "https://imgs.search.brave.com/dRJ5bVAQNoF1onaiITaTFgvT67F1hiJJQFK90_M5CL8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/aW1hZ2VzLm94LmFj/LnVrL2ltYWdlcy9p/bmRleC1jYXJkcy9E/RVRBSUwyMDIyMTAx/NC5qcGc",
+        "https://imgs.search.brave.com/5X0WblWaujW4nvODNjuYELJXMxePtKuAS5Q74RPms7Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAyLzU0LzQyLzQx/LzM2MF9GXzI1NDQy/NDExNV9keDFrNDNh/cVhGN2RHVzQyRWxL/MFF3RFNCQlNlRVc4/aC5qcGc",
+        "https://imgs.search.brave.com/AbR3i75IZTz27DHiPIPEKliLqi0u2TUq85XSvzd_Rfw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzA0LzYwLzA4LzUz/LzM2MF9GXzQ2MDA4/NTM2NV9SWDJxU3Y2/enhoeWFiRVBaaTVB/ejh5YUtycWdFS2dD/dC5qcGc",
+        "https://imgs.search.brave.com/yi3yHyx_AIX9iB0eGgWdjjNVe2C2hRfWElV51_f-QJQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/cGl4YWJheS5jb20v/cGhvdG8vMjAxOS8x/MC8yMi8xNy8xNi9z/aGFuZ2hhaS1qaWFv/LXRvbmctdW5pdmVy/c2l0eS00NTY5MjYy/XzY0MC5qcGc",
+        "https://imgs.search.brave.com/8mqFRdAPDkCJBy_Faj2cEC9jneNhaQJMr6m76O7_rjk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTQ1/Njc0OTE5NC9waG90/by9jb2xsZWdlLXN0/dWRlbnRzLWFycml2/aW5nLWZvci1uaWdo/dC1zY2hvb2wuanBn/P3M9NjEyeDYxMiZ3/PTAmaz0yMCZjPXF6/N1JNZGc0Y2dpb1dZ/dUtJUTByNGlaN2l0/SWJUcmhPUlRjci15/MEsyUms9",
+        "https://imgs.search.brave.com/dQiwgDS8-U6Sk_uS4owK4PyHf7df_UMI8tyktbE5G8w/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTc3/OTA3MDc1Ni9waG90/by90d28tdW5pdmVy/c2l0eS1zdHVkZW50/cy13YWxrLWRvd24t/Y2FtcHVzLXN0YWly/cy5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9TjdkMl82X2Fv/UFJlSmQ5YjZmVU1H/OXhXd0VqLXlYOVVH/LXFqZGNJeHdzMD0",
+        "https://imgs.search.brave.com/gAq6EpBUWXCgReM-1hfcOyQuNY1sI_dfZFlk0k2AGAk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTIx/NjYzNzYzMi9waG90/by9jb2xsZWdlLXN0/dWRlbnRzLWRlc2Nl/bmQtaW5kb29yLXN0/YWlyY2FzZS5qcGc_/cz02MTJ4NjEyJnc9/MCZrPTIwJmM9bXFy/YV83VlVab1FpRlAw/QVg4d2NPZ3N3bWtZ/U05pMUhXaURxVFlj/OUJkcz0",
+        "https://imgs.search.brave.com/oiTKECqsnClqb3YknRNVG-x3hhQ0ulMC8zb2ZMl2tJQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMjEy/MjE0ODM0OS9waG90/by93cml0aW5nLWFu/LWV4YW0tYXQtdGhl/LXVuaXZlcnNpdHku/anBnP3M9NjEyeDYx/MiZ3PTAmaz0yMCZj/PUxnVnpMY2RfY3hO/RFFyb2xaRkZxZzdB/SVFuVGRfeEJydmRX/ZnItZVZvSzg9",
+
+    ]
+
     universities = []
-    for _ in range(n):
+    for i in range(n):
         name = fake.company()
         location = fake.city()
-        logo_url = fake.image_url()
-        banner_url = fake.image_url()
+        # Cycle through the list of URLs for logo and banner.
+        logo_url = image_urls[i % len(image_urls)]
+        banner_url = image_urls[i % len(image_urls)]
         description = fake.text()
         website = fake.url()
 
@@ -40,6 +66,7 @@ def insert_universities(n=20):
             """
             INSERT INTO universities (UniversityName, Location, LogoURL, BannerURL, Description, WebsiteURL)
             VALUES (%s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE UniversityID = UniversityID
             """,
             (name, location, logo_url, banner_url, description, website),
         )
@@ -129,35 +156,34 @@ def insert_users(n=200, university_ids=[], role_ids=[]):
     return users
 
 
-def insert_teams(n=50, university_ids=[], user_ids=[]):
+def insert_teams(university_ids=[], user_ids=[], teams_per_university=4):
     teams = []
     generated_team_names = set()
-
-    for _ in range(n):
-        while True:
-            team_name = fake.word().capitalize() + " Team"
-            if team_name not in generated_team_names:
-                generated_team_names.add(team_name)
-                break
-
-        cursor.execute(
-            """
-            INSERT INTO teams (UniversityID, TeamName, ProfileImageURL, Description, TeamLeaderID, IsApproved)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """,
-            (
-                random.choice(university_ids),
-                team_name,
-                fake.image_url(),
-                fake.text(),
-                random.choice(user_ids),
-                random.choice([True, False]),
-            ),
-        )
-        teams.append(cursor.lastrowid)
-
+    for uni in university_ids:
+        for _ in range(teams_per_university):
+            while True:
+                team_name = fake.word().capitalize() + " Team"
+                if team_name not in generated_team_names:
+                    generated_team_names.add(team_name)
+                    break
+            cursor.execute(
+                """
+                INSERT INTO teams (UniversityID, TeamName, ProfileImageURL, Description, TeamLeaderID, IsApproved)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    uni,
+                    team_name,
+                    fake.image_url(),
+                    fake.text(),
+                    random.choice(user_ids),
+                    random.choice([True, False]),
+                ),
+            )
+            teams.append(cursor.lastrowid)
     conn.commit()
     return teams
+
 
 
 def insert_tournaments(n=20):

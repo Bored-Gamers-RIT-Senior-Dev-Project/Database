@@ -9,10 +9,11 @@ CREATE TABLE universities (
     UniversityID INT AUTO_INCREMENT PRIMARY KEY,
     UniversityName VARCHAR(255) NOT NULL,
     Location VARCHAR(255) NOT NULL,
-    LogoURL VARCHAR(255),
-    BannerURL VARCHAR(255),
+    LogoURL VARCHAR(512),
+    BannerURL VARCHAR(512),
     Description TEXT NOT NULL,
-    WebsiteURL VARCHAR(255) NOT NULL
+    WebsiteURL VARCHAR(255) NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -119,6 +120,33 @@ CREATE TABLE tickets (
     UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (UserID) REFERENCES users(UserID),
     FOREIGN KEY (ReportedUserID) REFERENCES users(UserID)
+);
+
+CREATE TABLE user_update (
+    UserUpdateId INT AUTO_INCREMENT PRIMARY KEY,
+    UpdatedUserID INT NOT NULL,
+    ApprovedBy INT NULL,
+    RequestedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FirstName VARCHAR(255) NULL,
+    LastName VARCHAR(255) NULL,
+    Username VARCHAR(255) NULL,
+    Email VARCHAR(255) NULL,
+    ProfileImageURL VARCHAR(255) NULL,
+    Bio TEXT NULL,
+    FOREIGN KEY (UpdatedUserID) REFERENCES users(UserID),
+    FOREIGN KEY (ApprovedBy) REFERENCES users(UserID)
+);
+
+CREATE TABLE team_update (
+    TeamUpdateId INT AUTO_INCREMENT PRIMARY KEY,
+    UpdatedTeamID INT NOT NULL,
+    ApprovedBy INT NULL,
+    RequestedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    TeamName VARCHAR(255) NULL,
+    ProfileImageURL VARCHAR(255) NULL,
+    Description TEXT NULL,
+    FOREIGN KEY (UpdatedTeamID) REFERENCES teams(TeamID),
+    FOREIGN KEY (ApprovedBy) REFERENCES users(UserID)
 );
 
 -- Add foreign key for TeamLeaderID in tblTeams

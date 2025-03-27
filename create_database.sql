@@ -172,8 +172,14 @@ CREATE INDEX idx_tournament_facilitators_tournament_id ON tournament_facilitator
 CREATE INDEX idx_tournament_facilitators_user_id ON tournament_facilitators (UserID);
 CREATE INDEX idx_tickets_user_id ON tickets (UserID);
 CREATE INDEX idx_tickets_reported_user_id ON tickets (ReportedUserID);
+CREATE INDEX idx_tp_tournament_status_order ON tournament_participants (TournamentID, Status, BracketOrder);
 
 -- Indexes for frequently queried columns
 CREATE INDEX idx_tournaments_tournament_name ON tournaments (TournamentName);
 CREATE INDEX idx_users_username ON users (Username);
 CREATE INDEX idx_users_email ON users (Email);
+CREATE INDEX idx_universities_createdat ON universities (CreatedAt);
+CREATE INDEX idx_tournaments_startdate ON tournaments (StartDate);
+CREATE INDEX idx_matches_matchtime ON matches (MatchTime);
+CREATE INDEX idx_tickets_createdat ON tickets (CreatedAt);
+

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-import mysql.connector
-import random
-import string
-from datetime import datetime, timedelta
-from faker import Faker
 import getpass
 import math
+import random
+import string
+import sys
+from datetime import datetime, timedelta
+
+import mysql.connector
+from faker import Faker
 
 fake = Faker()
 
@@ -423,23 +425,24 @@ def assign_users_to_teams(users, teams):
 
 
 # Insert Data
-universities = insert_universities()
 roles = insert_roles()
-users = insert_users(university_ids=universities, role_ids=roles)
-teams = insert_teams(university_ids=universities, user_ids=users)
-tournaments = insert_tournaments()
-#insert_matches(tournaments=tournaments, teams=teams)
-insert_tickets(users=users)
-insert_tournament_participants(users=users, tournaments=tournaments)
-insert_tournament_facilitators(users=users, tournaments=tournaments)
+if(len(sys.argv) > 1 and sys.argv[1] == "demo"):
+    universities = insert_universities()
+    users = insert_users(university_ids=universities, role_ids=roles)
+    teams = insert_teams(university_ids=universities, user_ids=users)
+    tournaments = insert_tournaments()
+    #insert_matches(tournaments=tournaments, teams=teams)
+    insert_tickets(users=users)
+    insert_tournament_participants(users=users, tournaments=tournaments)
+    insert_tournament_facilitators(users=users, tournaments=tournaments)
 
-assign_users_to_teams(users=users, teams=teams)
+    assign_users_to_teams(users=users, teams=teams)
 
-# Simulate a complete tournament bracket for each tournament (single elimination, randomized number of teams)
-for t in tournaments:
-    simulate_tournament_bracket(t)
+    # Simulate a complete tournament bracket for each tournament (single elimination, randomized number of teams)
+    for t in tournaments:
+        simulate_tournament_bracket(t)
+    print("Dummy data inserted and tournament brackets simulated successfully!")
 
 cursor.close()
 conn.close()
-
-print("Dummy data inserted and tournament brackets simulated successfully!")
+print("Data inserted successfully!")

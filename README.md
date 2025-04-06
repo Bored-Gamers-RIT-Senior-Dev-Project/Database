@@ -68,3 +68,15 @@ Before running the script, ensure that you have the following MySQL database det
     8. Tournament Participants (random assignment to teams and tournaments)
     9. Tournament Facilitators (users assigned to help facilitate tournaments)
 3. Deactivate the environment: `deactivate`
+
+## Granting Admin Access
+
+1. Create the user in the system.
+    1. Users must register an account via the website so that their credentials are registered with the Firebase User System.
+2. Run the script `python3 grant_admin.py` followed by a list of email addresses to grant admin access to.
+    1. ex: `python3 grant_admin.py user@aardvark.com user2@aardvark.com`
+3. When prompted, enter your database password.
+4. The program will report each account they are granting admin access to.
+    1. If successful, the program will report "Success!" for that user.
+    2. If that email is not found in the database, or the user is already an administrator, the program will report "Failed."
+    3. If an error occurred, the program will report "Error." and print the error message.
